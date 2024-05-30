@@ -1,0 +1,9 @@
+from flask import Blueprint
+from middlewares.jwt_class import auth_required
+
+{{ route_name }}_bp = Blueprint('{{ route_name }}_bp', __name__)
+
+@{{ route_name }}_bp.route('/{{ route_name }}', methods=['GET'])
+@auth_required
+def {{ route_name }}_endpoint(payload):
+    return "This is a protected route for {{ route_name }}", 200

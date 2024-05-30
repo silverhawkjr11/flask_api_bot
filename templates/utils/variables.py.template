@@ -1,0 +1,10 @@
+
+class Variables:
+    l_no_username_or_password = "No username or password or id"
+    l_customer_not_found = "Customer not found"
+    l_invalid_jwt_token = "Invalid JWT token"
+    l_jwt_token_expired = "JWT token expired"
+    l_no_jwt_token = "No JWT token"
+
+    def __init__(self, instance_variable):
+        self.instance_variable = instance_variable

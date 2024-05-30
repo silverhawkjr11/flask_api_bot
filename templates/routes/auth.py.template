@@ -1,0 +1,21 @@
+from flask import Blueprint, request
+from utils.functions import Functions
+from utils.variables import Variables
+
+auth_bp = Blueprint('auth_bp', __name__)
+
+@auth_bp.route('/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    if 'username' not in data or 'password' not in data or 'id' not in data:
+        return Functions.bad_request(Variables.l_no_username_or_password)
+
+    username = data['username']
+    password = data['password']
+    user_id = data['id']
+    found = Functions.is_customer_found(username, password, user_id)
+
+    if found:
+        return Functions.ok(Functions.encode_jwt(username, password, user_id))
+
+    return Functions.bad_request(Variables.l_customer_not_found)

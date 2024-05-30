@@ -1,0 +1,22 @@
+from functools import wraps
+from flask import request
+import jwt
+from utils.functions import Functions
+from utils.variables import Variables
+
+def auth_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        authorization_header = request.headers.get('Authorization')
+        if not authorization_header:
+            return Functions.unauthorized(Variables.l_no_jwt_token)
+        jwt_token = authorization_header.split(" ")[1]
+        try:
+            payload = Functions.decode_jwt(jwt_token)
+        except jwt.ExpiredSignatureError:
+            return Functions.unauthorized(Variables.l_jwt_token_expired)
+        except jwt.InvalidTokenError:
+            return Functions.unauthorized(Variables.l_invalid_jwt_token)
+        return f(payload, *args, **kwargs)
+
+    return decorated_function

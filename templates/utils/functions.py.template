@@ -1,0 +1,81 @@
+import datetime
+import os
+from flask import jsonify, request
+import jwt
+from config.config import Config
+from utils.variables import Variables
+
+class Functions:
+    @staticmethod
+    def response(message, status_code):
+        return jsonify({'response': message}), status_code
+
+    @staticmethod
+    def ok(message):
+        return Functions.response(message, 200)
+
+    @staticmethod
+    def bad_request(message):
+        return Functions.response(message, 400)
+
+    @staticmethod
+    def unauthorized(message):
+        return Functions.response(message, 401)
+
+    @staticmethod
+    def forbidden(message):
+        return Functions.response(message, 403)
+
+    @staticmethod
+    def is_customer_found(username, password, user_id):
+        if user_id in Config.g_users:
+            for user in Config.g_users[user_id]:
+                if user['username'] == username and user['password'] == password:
+                    return True
+        return False
+
+    @staticmethod
+    def encode_jwt(username, password, user_id):
+        expiration_time = datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(
+            minutes=Config.g_jwt_expiration_time)
+        exp = int(expiration_time.timestamp())
+        return jwt.encode({'username': username, 'password': password, 'id': user_id, 'exp': exp}, Config.g_jwt_secret,
+                          algorithm=Config.g_jwt_algorithm)
+
+    @staticmethod
+    def decode_jwt(token):
+        return jwt.decode(token, Config.g_jwt_secret, algorithms=[Config.g_jwt_algorithm])
+
+    @staticmethod
+    def get_timestamp():
+        return str(datetime.datetime.now().strftime("%Y%m%d%H%M%S"))
+
+    @staticmethod
+    def log(message):
+        if Config.g_is_debug:
+            print(message)
+
+    @staticmethod
+    def verify_jwt(jwt_token):
+        try:
+            payload = Functions.decode_jwt(jwt_token)
+            return payload
+        except Exception as e:
+            Functions.log(e)
+            return None
+
+    @staticmethod
+    def get_jwt_token(username, password, user_id):
+        return Functions.encode_jwt(username, password, user_id)
+
+    @staticmethod
+    def exists_in_request_files(file_name):
+        return file_name in request.files
+
+    @staticmethod
+    def is_request_file_name_empty(file_name):
+        return request.files[file_name].filename == ''
+
+    @staticmethod
+    def is_request_file_pdf(file_name):
+        return request.files[file_name].filename.lower().endswith('.pdf')

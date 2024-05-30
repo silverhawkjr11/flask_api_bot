@@ -1,0 +1,44 @@
+from flask import Flask
+from flask_cors import CORS
+from config.config import Config
+from routes.auth import auth_bp
+
+{% for route in routes %}
+from routes.{{ route }} import {{ route }}_bp
+{% endfor %}
+
+app = Flask(__name__)
+CORS(app)
+
+app.register_blueprint(auth_bp)
+
+{% for route in routes %}
+app.register_blueprint({{ route }}_bp)
+{% endfor %}
+
+if __name__ == '__main__':
+    if Config.g_online:
+        from gunicorn.app.base import BaseApplication
+
+        class StandaloneApplication(BaseApplication):
+            def __init__(self, app, options=None):
+                self.options = options or {}
+                self.application = app
+                super().__init__()
+
+            def load_config(self):
+                for key, value in self.options.items():
+                    self.cfg.set(key, value)
+
+            def load(self):
+                return self.application
+
+        options = {
+            'bind': f"{Config.g_host}:{Config.g_port}",
+            'workers': 4
+        }
+
+        standalone_app = StandaloneApplication(app, options)
+        standalone_app.run()
+    else:
+        app.run(host=Config.g_host, port=Config.g_port, debug=Config.g_is_debug)

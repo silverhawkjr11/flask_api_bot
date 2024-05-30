@@ -1,0 +1,11 @@
+
+import hashlib
+
+class Encoder:
+    @staticmethod
+    def encode(key):
+        return hashlib.md5(key.encode()).hexdigest()
+
+    @staticmethod
+    def encode_num(num):
+        return Encoder.encode(str(num))
