@@ -1,0 +1,26 @@
+from utils.encoder import Encoder
+
+class Config:
+    g_jwt_algorithm = "{{ g_jwt_algorithm }}"
+    g_jwt_secret = "{{ g_jwt_secret }}"
+    g_online = {{ g_online }}
+    g_jwt_expiration_time = {{ g_jwt_expiration_time }}
+    g_host = "{{ g_host }}"
+    g_port = {{ g_port }}
+    g_is_debug = {{ g_is_debug }}
+
+    g_users = {
+        {% for user_id, users in g_users.items() %}
+        Encoder.encode("{{ user_id }}"): [
+            {% for user in users %}
+            {
+                "username": "{{ user['username'] }}",
+                "password": "{{ user['password'] }}"
+            },
+            {% endfor %}
+        ],
+        {% endfor %}
+    }
+
+    def __init__(self, instance_variable):
+        self.instance_variable = instance_variable

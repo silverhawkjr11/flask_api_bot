@@ -1,5 +1,5 @@
 import os
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader, TemplateNotFound
 
 TEMPLATES = {
     'app.py': 'app.py.template',
@@ -19,8 +19,12 @@ def create_project_structure(project_name):
     os.makedirs(f"{project_name}/middlewares", exist_ok=True)
 
 def render_template(env, template_path, context):
-    template = env.get_template(template_path)
-    return template.render(context)
+    try:
+        template = env.get_template(template_path)
+        return template.render(context)
+    except TemplateNotFound:
+        print(f"Template not found: {template_path}")
+        raise
 
 def write_file(file_path, content):
     with open(file_path, 'w') as file:
@@ -48,8 +52,8 @@ def generate_project(project_name, config, routes):
         write_file(f"{project_name}/{file_path}", content)
 
     for route in routes:
-        content = render_template(env, 'routes/empty_route.py', {'route_name': route})
-        write_file(f"{project_name}/routes/{route}.py", content)
+        content = render_template(env, 'routes/empty_route.py.template', {'route_name': route.strip()})
+        write_file(f"{project_name}/routes/{route.strip()}.py", content)
 
 if __name__ == "__main__":
     project_name = input("Enter the project name: ")
@@ -77,7 +81,8 @@ if __name__ == "__main__":
             users.append({'username': username, 'password': password})
         config['g_users'][user_id] = users
 
-    routes = input("Enter route names separated by commas (excluding 'auth'): ").split(',')
+    routes_input = input("Enter route names separated by commas (excluding 'auth'): ")
+    routes = [route.strip() for route in routes_input.split(',') if route.strip()]
 
     generate_project(project_name, config, routes)
     print(f"Project '{project_name}' generated successfully.")
