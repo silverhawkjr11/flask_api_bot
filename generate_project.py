@@ -3,7 +3,7 @@ from jinja2 import Environment, FileSystemLoader, TemplateNotFound
 
 TEMPLATES = {
     'app.py': 'app.py.template',
-    'config/config.py': 'config.py.template',
+    'config/config.py': 'config/config.py.template',
     'utils/encoder.py': 'utils/encoder.py.template',
     'utils/functions.py': 'utils/functions.py.template',
     'utils/variables.py': 'utils/variables.py.template',
@@ -52,6 +52,7 @@ def generate_project(project_name, config, routes):
         write_file(f"{project_name}/{file_path}", content)
 
     for route in routes:
+        print(f"Generating route '{route}'")
         content = render_template(env, 'routes/empty_route.py.template', {'route_name': route.strip()})
         write_file(f"{project_name}/routes/{route.strip()}.py", content)
 
@@ -60,12 +61,12 @@ if __name__ == "__main__":
 
     config = {
         'g_jwt_algorithm': input("Enter JWT algorithm (default 'HS256'): ") or 'HS256',
-        'g_jwt_secret': input("Enter JWT secret: "),
-        'g_online': input("Is the app online? (True/False): ") in ['True', 'true', '1'],
+        'g_jwt_secret': input("Enter JWT secret: ") or "123",
+        'g_online': input("Is the app online? (True/False): ") or False,
         'g_jwt_expiration_time': int(input("Enter JWT expiration time (in minutes, default 30): ") or 30),
         'g_host': input("Enter host (default '0.0.0.0'): ") or '0.0.0.0',
         'g_port': int(input("Enter port (default 4000): ") or 4000),
-        'g_is_debug': input("Is debug mode on? (True/False): ") in ['True', 'true', '1'],
+        'g_is_debug': input("Is debug mode on? (True/False): ") or True,
         'g_users': {}
     }
 
